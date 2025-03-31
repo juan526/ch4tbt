@@ -1,20 +1,23 @@
 import admin from "firebase-admin";
 import dotenv from "dotenv";
-import fs from "fs";
 
 dotenv.config();
 
-const serviceAccountPath = process.env.FIREBASE_CREDENTIALS_PATH || "firebase-credentials.json";
-
-if (!fs.existsSync(serviceAccountPath)) {
-    console.error("Error: No se encuentra el archivo de credenciales de Firebase.");
-    process.exit(1);
+if (
+  !process.env.FIREBASE_PROJECT_ID ||
+  !process.env.FIREBASE_CLIENT_EMAIL ||
+  !process.env.FIREBASE_PRIVATE_KEY
+) {
+  console.error("Error: Faltan variables de entorno para Firebase.");
+  process.exit(1);
 }
 
-const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, "utf8"));
-
 admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.cert({
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+  }),
 });
 
 const db = admin.firestore();
